@@ -1,7 +1,5 @@
 import mido
 
-import mido
-
 def extract_music_gene_with_instruments(midi_file_path):
     midi_file = mido.MidiFile(midi_file_path)
     gene = []
@@ -31,10 +29,8 @@ def extract_music_gene_with_instruments(midi_file_path):
                     duration += msg.time
                     if msg.type == 'note_off' and msg.note == pitch and msg.channel == channel:
                         break
-
                 # Append pitch, time, velocity, duration, and instrument information
                 gene.append((pitch, time, velocity, duration, instrument))
-
     return gene
 
 # Example usage
