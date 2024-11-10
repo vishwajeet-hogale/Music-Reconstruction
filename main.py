@@ -2,9 +2,10 @@ import os
 import random
 import pretty_midi
 import numpy as np
-from src.genetic_algorithm import GeneticAlgorithm
-from src.midi_parser import load_midi_files
-from src.feature_extractor import extract_advanced_features
+from genetic_algorithm import GeneticAlgorithm
+from midi_parser import load_midi_files
+from feature_extractor import extract_advanced_features, get_binned_data
+import time 
 
 def create_midi_from_features(features):
     midi = pretty_midi.PrettyMIDI(initial_tempo=features['tempo'])
@@ -88,8 +89,8 @@ def calculate_similarity(version, original):
         return 0
 
 def main():
-    midi_directory = '/Users/krishnarayalu/Desktop/music_generation_project/data/clean_midi'
-    output_directory = '/Users/krishnarayalu/Desktop/music_generation_project/output'
+    midi_directory = './clean_midi'
+    output_directory = './output'
     
     # Ensure output directory exists
     os.makedirs(output_directory, exist_ok=True)
@@ -106,9 +107,11 @@ def main():
     features = []
     for filename, data in midi_data.items():
         midi_file = data['midi']
-        extracted_features = extract_advanced_features(midi_file)
+        extracted_features = extract_advanced_features(midi_file,data['song_name'])
         if extracted_features:
-            features.append(extracted_features)
+            print(extracted_features)
+            # time.sleep(4)
+            features.extend(extracted_features)
         else:
             print(f"Warning: Failed to extract features from {filename}")
 
@@ -117,34 +120,34 @@ def main():
     if not features:
         print("No features were extracted. Cannot proceed with genetic algorithm.")
         return
-
-    # Initialize genetic algorithm
-    ga = GeneticAlgorithm(population_size=50, mutation_rate=0.1)
+    get_binned_data()
+    # # Initialize genetic algorithm
+    # ga = GeneticAlgorithm(population_size=50, mutation_rate=0.1)
     
-    # Generate multiple versions
-    num_versions = 5
-    versions = generate_multiple_versions(ga, features, num_versions, generations=20)
+    # # Generate multiple versions
+    # num_versions = 5
+    # versions = generate_multiple_versions(ga, features, num_versions, generations=20)
     
-    # Analyze and save each version
-    for i, version in enumerate(versions):
-        analysis = analyze_version(version, features, ga)
+    # # Analyze and save each version
+    # for i, version in enumerate(versions):
+    #     analysis = analyze_version(version, features, ga)
         
-        print(f"\nAnalysis of Version {i+1}:")
-        print(f"Number of instruments: {analysis['num_instruments']}")
-        print(f"Tempo: {analysis['tempo']} BPM")
-        print(f"Total duration: {analysis['total_duration']:.2f} seconds")
-        print("Instrument breakdown:")
-        for inst, count in analysis['instrument_breakdown'].items():
-            print(f"  {inst}: {count}")
-        print("Feature similarity to original MIDI files:")
-        for filename, similarity in analysis['feature_similarity'].items():
-            print(f"  {filename}: {similarity:.2f}")
+    #     print(f"\nAnalysis of Version {i+1}:")
+    #     print(f"Number of instruments: {analysis['num_instruments']}")
+    #     print(f"Tempo: {analysis['tempo']} BPM")
+    #     print(f"Total duration: {analysis['total_duration']:.2f} seconds")
+    #     print("Instrument breakdown:")
+    #     for inst, count in analysis['instrument_breakdown'].items():
+    #         print(f"  {inst}: {count}")
+    #     print("Feature similarity to original MIDI files:")
+    #     for filename, similarity in analysis['feature_similarity'].items():
+    #         print(f"  {filename}: {similarity:.2f}")
         
-        # Generate new MIDI file from the version
-        new_midi = create_midi_from_features(version)
-        output_file = os.path.join(output_directory, f'generated_music_v{i+1}.mid')
-        new_midi.write(output_file)
-        print(f"Generated MIDI file: {output_file}")
+    #     # Generate new MIDI file from the version
+    #     new_midi = create_midi_from_features(version)
+    #     output_file = os.path.join(output_directory, f'generated_music_v{i+1}.mid')
+    #     new_midi.write(output_file)
+    #     print(f"Generated MIDI file: {output_file}")
 
 if __name__ == "__main__":
     main()
