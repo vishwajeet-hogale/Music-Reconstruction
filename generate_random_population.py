@@ -18,4 +18,5 @@ def generate_random_population(population_size, file):
         for gene in extracted_genes.keys():
             curr.append(random.sample(extracted_genes[gene], 1))
         population.append(curr)
+        curr = []
     return population
