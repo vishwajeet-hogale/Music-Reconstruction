@@ -2,9 +2,9 @@ import os
 import random
 import pretty_midi
 import numpy as np
-from src.genetic_algorithm import GeneticAlgorithm
-from src.midi_parser import load_midi_files
-from src.feature_extractor import extract_advanced_features
+from helper.genetic_algorithm import GeneticAlgorithm
+from helper.midi_parser import load_midi_files
+from helper.feature_extractor import extract_advanced_features
 
 def create_midi_from_features(features):
     midi = pretty_midi.PrettyMIDI(initial_tempo=features['tempo'])
