@@ -12,22 +12,49 @@ binned_data = {
     "Other" : []
 }
 
+camelot_system = {
+    "Db minor": "12A",
+    "E major": "12B",
+    "F# minor": "11A",
+    "A major": "11B",
+    "B minor": "10A",
+    "D major": "10B",
+    "E minor": "9A",
+    "G major": "9B",
+    "A minor": "8A",
+    "C major": "8B",
+    "D minor": "7A",
+    "F major": "7B",
+    "G minor": "6A",
+    "Bb major": "6B",
+    "C minor": "5A",
+    "Eb major": "5B",
+    "F minor": "4A",
+    "Ab major": "4B",
+    "Bb minor": "3A",
+    "Db major": "3B",
+    "Eb minor": "2A",
+    "F# major": "2B",
+    "Ab minor": "1A",
+    "B major": "1B",
+}
+
 def estimate_key(pitch_classes):
     major_template = [0, 2, 4, 5, 7, 9, 11]
     minor_template = [0, 2, 3, 5, 7, 8, 10]
     
     best_key = None
     max_score = 0
-    
+    note_names = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
     for tonic in range(12):
         major_score = sum([pitch_classes[(note + tonic) % 12] for note in major_template])
         minor_score = sum([pitch_classes[(note + tonic) % 12] for note in minor_template])
         
         if major_score > max_score:
-            best_key = f"{pretty_midi.note_number_to_name(tonic)} major"
+            best_key = f"{note_names[tonic]} major"
             max_score = major_score
         if minor_score > max_score:
-            best_key = f"{pretty_midi.note_number_to_name(tonic)} minor"
+            best_key = f"{note_names[tonic]} minor"
             max_score = minor_score
             
     return str(best_key)
@@ -87,7 +114,8 @@ def extract_advanced_features(midi, song_name="unknown"):
                 'song_name': song_name,
                 'tempo': tempo,
                 'time_signature': time_signature,
-                'key': None
+                'key': None,
+                'camelot_key' : None
             }
             
             notes_in_section = [
@@ -114,13 +142,18 @@ def extract_advanced_features(midi, song_name="unknown"):
                         'velocity': int(note.velocity)
                     })
             key = estimate_key(inst_features['pitch_classes'])
+            if key is None:
+                continue
             if len(key.split()) > 1:
                 inst_features['key'] = key.split()[0]
                 inst_features['maj_min'] = key.split()[1]
             else:
                 inst_features['key'] = key.split()[0]
                 inst_features['maj_min'] = ''
-                
+            try:
+                inst_features["camelot_key"] = camelot_system[inst_features["key"] + " " + inst_features["maj_min"]]
+            except:
+                continue
             binned_data[inst_features['instrument_category']].append(inst_features)
             all_section_features.append(inst_features)
     
@@ -130,3 +163,6 @@ def get_binned_data():
     json_filename = "binned_data_features.json"
     with open(json_filename, 'w') as json_file:
         json.dump(binned_data, json_file, indent=4)
+
+
+
