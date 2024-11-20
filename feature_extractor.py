@@ -165,4 +165,22 @@ def get_binned_data():
         json.dump(binned_data, json_file, indent=4)
 
 
+def fetch_gene_from_midi_data():
+    json_filename = "binned_data_features.json"
+    with open(json_filename, 'r') as f:
+        data = json.load(f)
+    all_sections = []
+    for i in data.values():
+        all_sections.extend(i)
+    section_data = dict()
+    for i in all_sections:
+            section_data[str(i["song_name"] + "_" + str(i["section_start"]) + "_" + str(i["section_end"]))] = i
 
+    json_filename = "section_instrument_data.json"
+    with open(json_filename, 'w') as json_file:
+        json.dump(section_data, json_file, indent=4)
+    return "Data loaded successfully!"
+
+
+if __name__ == "__main__":
+    print(fetch_gene_from_midi_data())
