@@ -87,8 +87,7 @@ def calculate_similarity(version, original):
         return similarity / total_features
     else:
         return 0
-
-def main():
+def load_data():
     midi_directory = './clean_midi'
     output_directory = './output'
     
@@ -121,33 +120,11 @@ def main():
         print("No features were extracted. Cannot proceed with genetic algorithm.")
         return
     get_binned_data()
-    # # Initialize genetic algorithm
-    # ga = GeneticAlgorithm(population_size=50, mutation_rate=0.1)
+
+
+def main():
+    pass
     
-    # # Generate multiple versions
-    # num_versions = 5
-    # versions = generate_multiple_versions(ga, features, num_versions, generations=20)
-    
-    # # Analyze and save each version
-    # for i, version in enumerate(versions):
-    #     analysis = analyze_version(version, features, ga)
-        
-    #     print(f"\nAnalysis of Version {i+1}:")
-    #     print(f"Number of instruments: {analysis['num_instruments']}")
-    #     print(f"Tempo: {analysis['tempo']} BPM")
-    #     print(f"Total duration: {analysis['total_duration']:.2f} seconds")
-    #     print("Instrument breakdown:")
-    #     for inst, count in analysis['instrument_breakdown'].items():
-    #         print(f"  {inst}: {count}")
-    #     print("Feature similarity to original MIDI files:")
-    #     for filename, similarity in analysis['feature_similarity'].items():
-    #         print(f"  {filename}: {similarity:.2f}")
-        
-    #     # Generate new MIDI file from the version
-    #     new_midi = create_midi_from_features(version)
-    #     output_file = os.path.join(output_directory, f'generated_music_v{i+1}.mid')
-    #     new_midi.write(output_file)
-    #     print(f"Generated MIDI file: {output_file}")
 
 if __name__ == "__main__":
     main()
