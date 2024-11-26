@@ -5,8 +5,8 @@ In this project, we reconstruct music from various components extracted from an 
 As a group of engineers and musicians, we naturally wanted to explore the intersection of AI, mathematics, and music. Our goal is take existing songs and use genetic algorithms to manipulate and create new, euphonious songs from existing samples. 
 
 # Built With
-[![Python Logo](https://www.python.org/community/logos/python-logo.png)](https://www.python.org/)
+[![Python](https://www.python.org/community/logos/python-logo.png)](https://www.python.org/)
 
 # Getting Started
-
+Our project comes with a UI that you can launch. 
 # Results
