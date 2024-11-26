@@ -1,14 +1,23 @@
 # TempoFitnessFunction
 
+
 def tempoFitness(population):
-    gene=1
+    gene=0
     T=[]
+    points=[]
     for child in population:
-        for i in range(0,4):
+        for i in range(0,5):
             T[i]=child[gene][11]
             tempo_sum += T[i]
+            gene +=1
         tempo_mean = tempo_sum/4
+        gene=0
         for j in range(0,4):
-            if child[gene][11]-tempo_mean==(2*tempo_mean or tempo_mean/2):
-                #decide how many fit genes are required in order to pass for fit population
+            diff = child[gene][11]-tempo_mean
+            points[i]=100-diff
+            gene +=1
+
+    return points
+            
+
             
