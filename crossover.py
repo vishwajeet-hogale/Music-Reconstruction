@@ -1,53 +1,74 @@
-
+import pretty_midi
 import json
-import random
+import os
 
-def ordered_crossover(parent1, parent2):
-    """
-    Perform crossover while maintaining instrument order (Drum, Piano, Guitar, Bass)
-    """
-    if len(parent1) != len(parent2):
-        raise ValueError("Both parents must have the same number of instruments")
+def create_midi_from_section(section_data, filename):
+    pm = pretty_midi.PrettyMIDI()
     
-    # Pick a random point to swap (1, 2, or 3)
-    crossover_point = random.randint(1, len(parent1) - 1)
+    # Track the instruments we've found
+    found_instruments = {
+        'Drum': False,
+        'Piano': False,
+        'Guitar': False,
+        'Bass': False,
+        'Other': False
+    }
     
-    # Create children by swapping instruments after the crossover point
-    child1 = parent1[:crossover_point] + parent2[crossover_point:]
-    child2 = parent2[:crossover_point] + parent1[crossover_point:]
+    for instrument_data in section_data:
+        instrument_category = instrument_data.get('instrument_category', '')
+        program = instrument_data.get('program', 0)
+        is_drum = instrument_data.get('is_drum', False)
+        section_start= 0
+        section_end= instrument_data.get('section_end', 0) - instrument_data.get('section_start', 0)
+        
+        if instrument_category in found_instruments:
+            found_instruments[instrument_category] = True
+            
+            instrument = pretty_midi.Instrument(
+                program=program,
+                name=instrument_category,
+                is_drum=is_drum
+            )
+            
+            for note_data in instrument_data.get('notes', []):
+                note = pretty_midi.Note(
+                    velocity=int(note_data['velocity']),
+                    pitch=int(note_data['pitch']),
+                    start=float(note_data['start']) - instrument_data.get('section_start', 0),
+                    end=float(note_data['end']) - float(note_data['start']))
+                
+                instrument.notes.append(note)
+            
+            if instrument.notes:
+                print(f"Processing {instrument_category}")
+                pm.instruments.append(instrument)
     
-    return child1, child2
+    # Check if we found all 5 instruments
+    missing = [inst for inst, found in found_instruments.items() if not found]
+    if missing:
+        print(f"Warning: Missing instruments in section: {', '.join(missing)}")
+    
+    pm.write(filename)
 
-def generate_children_from_file(input_file, output_file):
-    """
-    Generate children from multiple parents in input file
-    """
-    # Load parents from input file
-    with open(input_file, 'r') as f:
-        parents = json.load(f)
+def process_json_to_midi(json_data, output_dir):
+    os.makedirs(output_dir, exist_ok=True)
     
-    # Initialize list for children
-    children = []
-    
-    # Process pairs of parents
-    for i in range(0, len(parents) - 1, 2):
-        parent1 = parents[i]
-        parent2 = parents[i + 1]
-        child1, child2 = ordered_crossover(parent1, parent2)
-        children.extend([child1, child2])
-    
-    # Handle odd number of parents by pairing last parent with first child
-    if len(parents) % 2 != 0 and children:
-        last_parent = parents[-1]
-        extra_child1, extra_child2 = ordered_crossover(last_parent, children[0])
-        children.extend([extra_child1, extra_child2])
-    
-    # Write children to output file
-    with open(output_file, 'w') as f:
-        json.dump(children, f, indent=4)
+    for i, section in enumerate(json_data):
+        print(f"\nProcessing section {i+1}")
+        instruments = []
+        if isinstance(section, list):
+            for group in section:
+                if isinstance(group, list):
+                    for item in group:
+                        if isinstance(item, dict) and 'notes' in item:
+                            instruments.append(item)
+        
+        if instruments:
+            filename = os.path.join(output_dir, f"section_{i+1}.mid")
+            create_midi_from_section(instruments, filename)
 
-# Example usage
-input_file = 'initial_population.json'
-output_file = 'children_population.json'
-generate_children_from_file(input_file, output_file)
-print(f"Generated children have been written to {output_file}")
+with open('initial_population.json', 'r') as f:
+    json_data = json.load(f)
+
+output_directory = "D:/Boston/Northeastern/Fall Sem-24/Foundations of AI/Project/Output"
+process_json_to_midi(json_data, output_directory)
