@@ -20,7 +20,8 @@ def load_midi_files(directory):
                     midi_data[filename] = {
                         'midi': midi,
                         'artist': artist,
-                        'title': title
+                        'title': title,
+                        'song_name' : filename
                     }
                     print(f"Successfully loaded: {filename}")
                 except Exception as e:
