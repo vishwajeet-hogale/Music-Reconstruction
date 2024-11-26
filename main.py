@@ -11,21 +11,15 @@ import time
 
 def main():
 
-    generations = 200
-
+    generations = 250
     ga = GeneticAlgorithm()
     ga.load_data()
-    # 0th generation 
     ga.generate_random_population("./binned_data_features.json")
     ga.fitness_population()
-    # ga.test()
-    # print("Hello ", ga.population[2])
     for i in range(1,generations):
         ga.generation_builder()
         print(1)
         ga.fitness_population()
-        # if i % 100 == 0 :
-        #     print(ga.population)
     ga.call_post_process()
 
 if __name__ == "__main__":
