@@ -221,7 +221,6 @@ class GeneticAlgorithm:
         self.population = [i[0] for i in sorted(scored_population, key = lambda x : -x[1])]
         # print(self.population[0])
     def generation_builder(self):
-
         '''
         Takes the output populations from the random child generator, crossover child generator, mutated child generator, and 
         the best fit children population, and combines them into single population to be used for the next generation. Percentages 
@@ -278,7 +277,6 @@ class GeneticAlgorithm:
         missing = [inst for inst, found in found_instruments.items() if not found]
         if missing:
             print(f"Warning: Missing instruments in section: {', '.join(missing)}")
-        
         pm.write(filename)
 
     def test(self):
