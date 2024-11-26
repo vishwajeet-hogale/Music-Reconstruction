@@ -18,14 +18,10 @@ def ordered_crossover(parent1, parent2):
     
     return child1, child2
 
-def generate_children_from_file(input_file, output_file, percentage):
+def generate_children_from_file(parents, percentage):
     """
     Generate children from multiple parents in input file
     """
-    # Load parents from input file
-    with open(input_file, 'r') as f:
-        parents = json.load(f)
-    
     # Initialize list for children
     children = []
     
@@ -41,10 +37,6 @@ def generate_children_from_file(input_file, output_file, percentage):
         last_parent = parents[-1]
         extra_child1, extra_child2 = ordered_crossover(last_parent, children[0])
         children.extend([extra_child1, extra_child2])
-    
-    # Write children to output file
-    with open(output_file, 'w') as f:
-        json.dump(children, f, indent=4)
 
     percent_num= int(len(children)*(percentage/100))
     children = random.sample(children, percent_num)
