@@ -26,6 +26,7 @@ def main():
         ga.fitness_population()
         # if i % 100 == 0 :
         #     print(ga.population)
+    ga.call_post_process()
 
 if __name__ == "__main__":
     main()

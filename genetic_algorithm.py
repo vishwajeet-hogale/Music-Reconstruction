@@ -234,9 +234,9 @@ class GeneticAlgorithm:
         random_population = self.generate_random_population_gen(int(self.population_size*self.random_rate))
         self.population = best_population + crossover_population + mutated_population + random_population
 
-    def create_midi_from_section(section_data, filename):
+    def create_midi_from_section(self, section_data, filename):
         pm = pretty_midi.PrettyMIDI()
-        
+
         # Track the instruments we've found
         found_instruments = {
             'Drum': False,
@@ -245,42 +245,68 @@ class GeneticAlgorithm:
             'Bass': False,
             'Other': False
         }
-        
+
         for instrument_data in section_data:
-            instrument_category = instrument_data.get('instrument_category', '')
+            instrument_category = instrument_data.get('instrument_category', 'Other')
             program = instrument_data.get('program', 0)
             is_drum = instrument_data.get('is_drum', False)
-            
+            section_start = instrument_data.get('section_start', 0)
+            section_end = instrument_data.get('section_end', 0)
+
             if instrument_category in found_instruments:
                 found_instruments[instrument_category] = True
-                
-                instrument = pretty_midi.Instrument(
-                    program=program,
-                    name=instrument_category,
-                    is_drum=is_drum
+
+            instrument = pretty_midi.Instrument(
+                program=program,
+                name=instrument_category,
+                is_drum=is_drum
+            )
+
+            for note_data in instrument_data.get('notes', []):
+                note_start = float(note_data['start']) - section_start
+                note_end = float(note_data['end']) - section_start
+                if note_start < 0 or note_end <= note_start:
+                    print(f"Skipping invalid note in {instrument_category}: {note_data}")
+                    continue
+
+                note = pretty_midi.Note(
+                    velocity=int(note_data['velocity']),
+                    pitch=int(note_data['pitch']),
+                    start=note_start,
+                    end=note_end
                 )
-                
-                for note_data in instrument_data.get('notes', []):
-                    note = pretty_midi.Note(
-                        velocity=int(note_data['velocity']),
-                        pitch=int(note_data['pitch']),
-                        start=float(note_data['start']),
-                        end=float(note_data['end'])
-                    )
-                    instrument.notes.append(note)
-                
-                if instrument.notes:
-                    print(f"Processing {instrument_category}")
-                    pm.instruments.append(instrument)
-        
+
+                instrument.notes.append(note)
+
+            if instrument.notes:
+                print(f"Processing {instrument_category}")
+                pm.instruments.append(instrument)
+
         # Check if we found all 5 instruments
         missing = [inst for inst, found in found_instruments.items() if not found]
         if missing:
             print(f"Warning: Missing instruments in section: {', '.join(missing)}")
+
         pm.write(filename)
 
-    def test(self):
-        print(self.score_tempo(self.population[:1]))
+    def process_json_to_midi(self, json_data, output_dir):
+        os.makedirs(output_dir, exist_ok=True)
 
+        for i, section in enumerate(json_data):
+            print(f"\nProcessing section {i+1}")
+            instruments = []
+            if isinstance(section, list):
+                for group in section:
+                    if isinstance(group, list):
+                        for item in group:
+                            if isinstance(item, dict) and 'notes' in item:
+                                instruments.append(item)
 
-    
+            if instruments:
+                filename = os.path.join(output_dir, f"section_{i+1}.mid")
+                self.create_midi_from_section(instruments, filename)
+
+    def call_post_process(self):
+        json_data = self.population[:5]
+        output_directory = "./output"
+        self.process_json_to_midi(json_data, output_directory)
