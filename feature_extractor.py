@@ -163,6 +163,7 @@ def get_binned_data():
     json_filename = "binned_data_features.json"
     with open(json_filename, 'w') as json_file:
         json.dump(binned_data, json_file, indent=4)
+    return binned_data
 
 
 def fetch_gene_from_midi_data():
