@@ -2,7 +2,7 @@
 import numpy as np
 import random
 
-def mutation(crossover_population, mute_rate): 
+def mutation(crossover_population, percentage): 
     '''
     Mutate one random feature in every gene of every child in the population. 
 
@@ -44,6 +44,7 @@ def mutation(crossover_population, mute_rate):
         elif index == 2:
             child[gene][13]  = key_manipulation(child[gene][13])  # Replace 'key' with the correct index/key
 
-    mutated_population = crossover_population
 
-    return mutated_population 
+    percent_num= int(len(crossover_population)*(percentage/100))
+    mutated_pop = random.sample(crossover_population, percent_num)
+    return mutated_pop
