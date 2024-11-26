@@ -18,6 +18,8 @@ def create_midi_from_section(section_data, filename):
         instrument_category = instrument_data.get('instrument_category', '')
         program = instrument_data.get('program', 0)
         is_drum = instrument_data.get('is_drum', False)
+        section_start= 0
+        section_end= instrument_data.get('section_end', 0) - instrument_data.get('section_start', 0)
         
         if instrument_category in found_instruments:
             found_instruments[instrument_category] = True
@@ -32,9 +34,9 @@ def create_midi_from_section(section_data, filename):
                 note = pretty_midi.Note(
                     velocity=int(note_data['velocity']),
                     pitch=int(note_data['pitch']),
-                    start=float(note_data['start']),
-                    end=float(note_data['end'])
-                )
+                    start=float(note_data['start']) - instrument_data.get('section_start', 0),
+                    end=float(note_data['end']) - float(note_data['start']))
+                
                 instrument.notes.append(note)
             
             if instrument.notes:
