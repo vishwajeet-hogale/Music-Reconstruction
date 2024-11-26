@@ -1,6 +1,9 @@
 import random
 import numpy as np
-
+import os
+from midi_parser import load_midi_files
+from feature_extractor import extract_advanced_features, get_binned_data
+import json
 class GeneticAlgorithm:
     def __init__(self, population_size, mutation_rate):
         self.population_size = population_size
@@ -21,8 +24,55 @@ class GeneticAlgorithm:
             'Flute': ['Clarinet', 'Oboe', 'Piano']
         }
 
-    def initialize_population(self, features):
-        return random.sample(features, min(self.population_size, len(features)))
+    def load_data(self):
+        midi_directory = './clean_midi'
+        output_directory = './output'
+        
+        # Ensure output directory exists
+        os.makedirs(output_directory, exist_ok=True)
+        
+        # Load MIDI files and extract features
+        midi_data = load_midi_files(midi_directory)
+        
+        if not midi_data:
+            print("No MIDI files were loaded. Please check the directory and file permissions.")
+            return
+
+        print(f"Processing {len(midi_data)} MIDI files.")
+        
+        features = []
+        for filename, data in midi_data.items():
+            midi_file = data['midi']
+            extracted_features = extract_advanced_features(midi_file,data['song_name'])
+            if extracted_features:
+                print(extracted_features)
+                # time.sleep(4)
+                features.extend(extracted_features)
+            else:
+                print(f"Warning: Failed to extract features from {filename}")
+
+        print(f"Extracted features from {len(features)} MIDI files.")
+
+        if not features:
+            print("No features were extracted. Cannot proceed with genetic algorithm.")
+            return
+        get_binned_data()
+    def extract_json_data(self,file):
+        extracted_genes = json.load(open(file))
+        return extracted_genes
+    def extract_json_data(file):
+        extracted_genes = json.load(open(file))
+        return extracted_genes
+    def generate_random_population(population_size, file):
+        extracted_genes = self.extract_json_data(file)
+        population = []
+        curr = []
+        for i in range(population_size):
+            for gene in extracted_genes.keys():
+                curr.append(random.sample(extracted_genes[gene], 1))
+            population.append(curr)
+            curr = []
+        return population
 
     def crossover(self, parent1, parent2):
         child = {}
