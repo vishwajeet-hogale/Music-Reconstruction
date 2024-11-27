@@ -11,7 +11,7 @@ import time
 
 def main():
 
-    generations = 200
+    generations = 300
     ga = GeneticAlgorithm()
     ga.load_data()
     ga.generate_random_population("./binned_data_features.json")
