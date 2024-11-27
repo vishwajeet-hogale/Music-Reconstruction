@@ -157,7 +157,7 @@ class GeneticAlgorithm:
     def calculate_velocity_score(self, individual, tolerance=0.05):
             def calculate_distance_score(velocity, avg_velocity):
                 if avg_velocity == 0 or velocity == 0:
-                    return 1
+                    return -400
                 
                 difference = abs(velocity - avg_velocity) / avg_velocity
                 
@@ -319,6 +319,16 @@ class GeneticAlgorithm:
         key_score = (compatibility_score/max_score)*100
 
         return key_score
+        
+    def score_recombination(self, individual):
+        track_IDs = [ind.get('song_name') for ind in individual[:5]]
+        if len(track_IDs) != len(set(track_IDs)):
+            recombination_score = -400
+        else:
+            recombination_score = 0
+            
+        return recombination_score
+
     def fitness(self, individual):
         score = 0
         
@@ -327,6 +337,7 @@ class GeneticAlgorithm:
         score += self.score_tempo(individual)
         score += self.score_time_signature(individual)
         score += self.key_score_function(individual)
+        score += self.score_recombination(individual)
         print(score)
         return score   # Normalize score
     
