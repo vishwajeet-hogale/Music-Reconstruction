@@ -78,7 +78,7 @@ def extract_advanced_features(midi, song_name="unknown"):
     tempo = midi.estimate_tempo()
     beat_length = 60.0 / tempo
     bar_length = 4 * beat_length
-    section_duration = 20 * bar_length
+    section_duration = 60 * bar_length
     time_signature = "4/4"
     
     if midi.time_signature_changes:
@@ -163,6 +163,7 @@ def get_binned_data():
     json_filename = "binned_data_features.json"
     with open(json_filename, 'w') as json_file:
         json.dump(binned_data, json_file, indent=4)
+    return binned_data
 
 
 def fetch_gene_from_midi_data():
