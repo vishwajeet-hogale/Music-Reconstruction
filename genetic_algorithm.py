@@ -6,9 +6,9 @@ from feature_extractor import extract_advanced_features, get_binned_data
 import json
 import pretty_midi
 from collections import Counter
-
+import time
 class GeneticAlgorithm:
-    def __init__(self, population_size = 100, mutation_rate = 0.25, crossover_rate = 0.25, best_fit_perc = 0.25, random_rate= 0.25):
+    def __init__(self, population_size = 1000, mutation_rate = 0.25, crossover_rate = 0.15, best_fit_perc = 0.4, random_rate= 0.2):
         self.best_fit_perc = best_fit_perc
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -362,6 +362,10 @@ class GeneticAlgorithm:
             'Other': False
         }
 
+        if not section_data:
+            print(f"Section data is empty. Skipping file creation for {filename}")
+            return
+
         for instrument_data in section_data:
             instrument_category = instrument_data.get('instrument_category', 'Other')
             program = instrument_data.get('program', 0)
@@ -379,50 +383,73 @@ class GeneticAlgorithm:
             )
 
             for note_data in instrument_data.get('notes', []):
-                note_start = float(note_data['start']) - section_start
-                note_end = float(note_data['end']) - section_start
-                if note_start < 0 or note_end <= note_start:
-                    print(f"Skipping invalid note in {instrument_category}: {note_data}")
-                    continue
+                try:
+                    note_start = float(note_data['start']) - section_start
+                    note_end = float(note_data['end']) - section_start
+                    if note_start < 0 or note_end <= note_start:
+                        print(f"Skipping invalid note in {instrument_category}: {note_data}")
+                        continue
 
-                note = pretty_midi.Note(
-                    velocity=int(note_data['velocity']),
-                    pitch=int(note_data['pitch']),
-                    start=note_start,
-                    end=note_end
-                )
+                    note = pretty_midi.Note(
+                        velocity=int(note_data['velocity']),
+                        pitch=int(note_data['pitch']),
+                        start=note_start,
+                        end=note_end
+                    )
 
-                instrument.notes.append(note)
+                    instrument.notes.append(note)
+                except Exception as e:
+                    print(f"Error processing note {note_data}: {e}")
 
             if instrument.notes:
-                print(f"Processing {instrument_category}")
+                print(f"Processing {instrument_category}: {len(instrument.notes)} notes added")
                 pm.instruments.append(instrument)
+            else:
+                print(f"No valid notes found for {instrument_category}")
 
         # Check if we found all 5 instruments
         missing = [inst for inst, found in found_instruments.items() if not found]
         if missing:
             print(f"Warning: Missing instruments in section: {', '.join(missing)}")
 
-        pm.write(filename)
+        try:
+            pm.write(filename)
+            print(f"Successfully wrote MIDI file: {filename}")
+        except Exception as e:
+            print(f"Error writing MIDI file {filename}: {e}")
+
 
     def process_json_to_midi(self, json_data, output_dir):
-        os.makedirs(output_dir, exist_ok=True)
+        try:
+            output_directory = os.path.abspath(output_dir)
+            os.makedirs(output_directory, exist_ok=True)
+            print(f"Output directory created: {output_directory}")
+        except Exception as e:
+            print(f"Error creating output directory: {e}")
+            return
 
-        for i, section in enumerate(json_data):
-            print(f"\nProcessing section {i+1}")
+        for i, section_group in enumerate(json_data):
+            print(f"\nProcessing group {i + 1}")
+            # Flatten the section group to merge all instrument sections in one group
             instruments = []
-            if isinstance(section, list):
-                for group in section:
-                    if isinstance(group, list):
-                        for item in group:
-                            if isinstance(item, dict) and 'notes' in item:
-                                instruments.append(item)
+            for section in section_group:
+                if isinstance(section, dict) and 'notes' in section:
+                    instruments.append(section)
 
             if instruments:
-                filename = os.path.join(output_dir, f"section_{i+1}.mid")
+                filename = os.path.join(output_directory, f"group_{i + 1}.mid")
                 self.create_midi_from_section(instruments, filename)
+            else:
+                print(f"No valid instruments found in group {i + 1}")
+
 
     def call_post_process(self):
-        json_data = self.population[:5]
+        if not self.population or not isinstance(self.population, list):
+            print("No data in population to process or invalid structure.")
+            return
+
+        print(f"Processing first 5 groups from population. Total groups: {len(self.population)}")
+        json_data = self.population[:5]  # Limit to first 5 groups for processing
         output_directory = "./output"
         self.process_json_to_midi(json_data, output_directory)
+
