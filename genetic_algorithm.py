@@ -8,7 +8,7 @@ import pretty_midi
 from collections import Counter
 import time
 class GeneticAlgorithm:
-    def __init__(self, population_size = 1000, mutation_rate = 0.2, crossover_rate = 0.2, best_fit_perc = 0.2, random_rate= 0.4):
+    def __init__(self, population_size = 1000, mutation_rate = 0.2, crossover_rate = 0.1, best_fit_perc = 0.3, random_rate= 0.4):
         self.best_fit_perc = best_fit_perc
         self.population_size = population_size
         self.mutation_rate = mutation_rate
