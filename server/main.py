@@ -10,7 +10,7 @@ from helper.feature_extractor import extract_advanced_features
 
 def main():
 
-    generations = 300
+    generations = 5
     ga = GeneticAlgorithm()
     ga.load_data()
     ga.generate_random_population("./binned_data_features.json")
@@ -19,6 +19,7 @@ def main():
         ga.generation_builder()
         ga.fitness_population()
     ga.call_post_process()
+    ga.convert_mid_to_mp3()
 
 if __name__ == "__main__":
     main()
