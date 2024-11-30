@@ -7,8 +7,11 @@ import json
 import pretty_midi
 from collections import Counter
 import time
+from pydub import AudioSegment
+from midi2audio import FluidSynth
+from io import BytesIO
 class GeneticAlgorithm:
-    def __init__(self, population_size = 1000, mutation_rate = 0.2, crossover_rate = 0.1, best_fit_perc = 0.3, random_rate= 0.4):
+    def __init__(self, population_size = 1000, mutation_rate = 0.3, crossover_rate = 0.3, best_fit_perc = 0.15, random_rate= 0.25):
         self.best_fit_perc = best_fit_perc
         self.population_size = population_size
         self.mutation_rate = mutation_rate
@@ -19,7 +22,8 @@ class GeneticAlgorithm:
         
 
     def load_data(self):
-        midi_directory = '../clean_midi'
+        # midi_directory = '../clean_midi'
+        midi_directory = './uploads'
         output_directory = '../output'
         
         os.makedirs(output_directory, exist_ok=True)
@@ -522,3 +526,51 @@ class GeneticAlgorithm:
             print(f"Error during processing: {e}")
             import traceback
             traceback.print_exc()
+
+    
+    def convert_mid_to_mp3(folder_path="./output", output_folder="./output_mp3", sound_font_path=None):
+        os.makedirs(output_folder, exist_ok=True)
+
+        for filename in os.listdir("./output"):
+            if filename.endswith('.mid'):
+                midi_path = os.path.join("./output", filename)
+                mp3_filename = os.path.splitext(filename)[0] + '.mp3'
+                mp3_path = os.path.join(output_folder, mp3_filename)
+                print(f"Converting {midi_path} to {mp3_filename}")
+
+                try:
+                    # Initialize FluidSynth with the SoundFont if provided
+                    if sound_font_path:
+                        fs = FluidSynth(sound_font_path)
+                        # Temporary WAV file path
+                        wav_temp_path = mp3_path.replace('.mp3', '.wav')
+                        fs.midi_to_audio(midi_path, wav_temp_path)
+                    else:
+                        # Synthesize using pretty_midi (this will return audio as a numpy array)
+                        midi_data = pretty_midi.PrettyMIDI(midi_path)
+                        audio_data = midi_data.synthesize(fs=44100)
+
+                        # Debug: Check audio data size and write it to a temporary WAV file
+                        print(f"Audio data size: {len(audio_data)} bytes")
+
+                        # Write the audio data to a temporary WAV file
+                        wav_temp_path = mp3_path.replace('.mp3', '.wav')
+                        with open(wav_temp_path, 'wb') as f:
+                            f.write(audio_data)
+
+                    # Check if the WAV file is valid before attempting to convert to MP3
+                    try:
+                        sound = AudioSegment.from_wav(wav_temp_path)
+                    except Exception as e:
+                        print(f"Error loading WAV file: {e}")
+                        continue  # Skip this file if WAV is not valid
+
+                    # Convert the WAV file to MP3 using pydub
+                    sound.export(mp3_path, format='mp3')
+
+                    # Clean up the temporary WAV file
+                    os.remove(wav_temp_path)
+
+                    print(f"Converted {filename} to {mp3_filename}")
+                except Exception as e:
+                    print(f"Error converting {filename}: {e}")
