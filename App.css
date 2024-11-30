@@ -1,0 +1,78 @@
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #3b82f6, #2563eb); /* Blue gradient */
+  color: white;
+}
+
+h1 {
+  margin-bottom: 20px;
+  font-size: 2rem;
+}
+
+h2 {
+  margin-bottom: 20px;
+}
+
+.upload-button {
+  font-size: 1rem;
+  background-color: #22c55e; /* Green button */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.upload-button:hover {
+  background-color: #16a34a; /* Darker green on hover */
+}
+
+.back-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background-color: #f87171; /* Red button */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.back-button:hover {
+  background-color: #ef4444; /* Darker red on hover */
+}
+
+.recycle-button {
+  font-size: 1.5rem;
+  background-color: #22c55e;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.recycle-button:hover {
+  background-color: #16a34a;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+li {
+  font-size: 1rem;
+  color: white;
+  margin-bottom: 5px;
+}
