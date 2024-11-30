@@ -20,7 +20,5 @@ def main():
         ga.fitness_population()
     ga.call_post_process()
 
-
-
 if __name__ == "__main__":
     main()
