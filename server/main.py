@@ -10,7 +10,7 @@ from helper.feature_extractor import extract_advanced_features
 
 def main():
 
-    generations = 5
+    generations = 200
     ga = GeneticAlgorithm()
     ga.load_data()
     ga.generate_random_population("./binned_data_features.json")
