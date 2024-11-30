@@ -15,6 +15,7 @@ class GeneticAlgorithm:
         self.crossover_rate = crossover_rate
         self.random_rate = random_rate
         self.population = None
+        self.scored_storage = []
         
 
     def load_data(self):
@@ -345,6 +346,7 @@ class GeneticAlgorithm:
         scored_population = []
         for chrome in self.population:
             scored_population.append([chrome,self.fitness(chrome)])
+            self.scored_storage.append(self.fitness(chrome))
         self.population = [i[0] for i in sorted(scored_population, key = lambda x : -x[1])]
         # print(self.population[0])
     def generation_builder(self):
