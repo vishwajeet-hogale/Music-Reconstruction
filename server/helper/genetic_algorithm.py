@@ -11,7 +11,7 @@ from pydub import AudioSegment
 from midi2audio import FluidSynth
 from io import BytesIO
 class GeneticAlgorithm:
-    def __init__(self, population_size = 1000, mutation_rate = 0.3, crossover_rate = 0.3, best_fit_perc = 0.15, random_rate= 0.25):
+    def __init__(self, population_size = 1000, mutation_rate = 0.4, crossover_rate = 0.2, best_fit_perc = 0.2, random_rate= 0.2):
         self.best_fit_perc = best_fit_perc
         self.population_size = population_size
         self.mutation_rate = mutation_rate

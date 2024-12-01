@@ -28,12 +28,13 @@ function App() {
   }, []);
 
   // Handles the recycling process
-  const handleRecycleClick = () => {
+  const handleRecycleClick = async () => {
     setLoading(true); // Show the loading screen
+    
     setTimeout(() => {
       setLoading(false); // Hide the loading screen
       setStage((prevStage) => prevStage + 1); // Move to the next stage
-    }, 5000); // Simulate 5 seconds delay
+    }, 2000); // Simulate 5 seconds delay
   };
 
   // Handles MIDI file uploads
@@ -77,6 +78,27 @@ function App() {
     } else {
       alert("Please upload valid MIDI files only!");
     }
+
+
+    try {
+        // Send the files to the backend using a POST request
+        const response = await fetch("http://127.0.0.1:5000/run", {
+          method: "GET"
+        });
+
+        // if (response.ok) {
+        //   const result = await response.json();
+        //   console.log("Generations successful:", result);
+        //   // alert("Generations successful!");
+        // } else {
+        //   console.error("Failed to upload files");
+        //   alert("Failed to upload files. Please try again.");
+        // }
+      } catch (error) {
+        console.error("Error during file upload:", error);
+        alert("An error occurred while uploading files.");
+      }
+
   };
 
   // Handles navigating back to the previous stage
@@ -129,13 +151,25 @@ function App() {
       {loading ? (
         <h1>Recycling...</h1>
       ) : (
-        stage < songs.length && (
+        stage > 0 &&
+        stage <= songs.length && (
           <>
-            <h2>Stage {stage + 1}: {songs[stage]}</h2>
+            <h2>Stage {stage}: {songs[stage - 1]}</h2>
             <div id="audio">
+              <button
+                className="download-button"
+                onClick={() =>
+                  window.open(
+                    `http://127.0.0.1:5000/songs/${songs[stage - 1]}`,
+                    "_blank"
+                  )
+                }
+              >
+                Download
+              </button>
               <audio controls>
                 <source
-                  src={`http://127.0.0.1:5000/songs/${songs[stage]}`}
+                  src={`http://127.0.0.1:5000/songs/${songs[stage - 1]}`}
                   type="audio/wav"
                 />
                 Your browser does not support the audio element.
@@ -149,7 +183,7 @@ function App() {
       )}
 
       {/* If all stages are completed */}
-      {stage === songs.length && (
+      {stage > songs.length && (
         <div>
           <h2>Fully Recycled Audio</h2>
           <audio controls>
