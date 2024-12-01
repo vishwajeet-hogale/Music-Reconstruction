@@ -6,6 +6,7 @@ As a group of engineers and musicians, we naturally wanted to explore the inters
 
 # Built With
 [![Python](https://www.python.org/community/logos/python-logo.png)](https://www.python.org/)
+
 [!Node.js](https://nodejs.org/en)
 # Getting Started
 This project is built with a GUI to simplify user interactions. 
