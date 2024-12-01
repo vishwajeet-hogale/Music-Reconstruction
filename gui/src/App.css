@@ -76,3 +76,25 @@ li {
   color: white;
   margin-bottom: 5px;
 }
+
+#audio {
+  display: flex;
+  flex-direction: column; /* Stack items vertically */
+  align-items: center; /* Center align both button and audio */
+  margin: 10px 0;
+}
+
+.download-button {
+  margin-bottom: 10px; /* Add space between button and audio */
+  padding: 5px 10px;
+  background-color: #4caf50;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.download-button:hover {
+  background-color: #45a049;
+}
