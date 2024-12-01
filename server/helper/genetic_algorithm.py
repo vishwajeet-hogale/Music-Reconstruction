@@ -19,6 +19,7 @@ class GeneticAlgorithm:
         self.random_rate = random_rate
         self.population = None
         self.extracted_genes = None
+        self.file_counter = 1
         
 
     def load_data(self):
@@ -343,7 +344,7 @@ class GeneticAlgorithm:
         score += self.score_time_signature(individual)
         score += self.key_score_function(individual)
         score += self.score_recombination(individual)
-        print(score)
+        # print(score)
         return score   # Normalize score
     
     def fitness_population(self):
@@ -365,168 +366,6 @@ class GeneticAlgorithm:
         mutated_population = self.mutation(self.population)
         random_population = self.generate_random_population_gen(int(self.population_size*self.random_rate))
         self.population = best_population + crossover_population + mutated_population + random_population
-
-    def create_midi_from_section(self, section_data, filename):
-        pm = pretty_midi.PrettyMIDI()
-
-        found_instruments = {
-            'Drum': False, 'Piano': False, 'Guitar': False, 
-            'Bass': False, 'Other': False
-        }
-
-        instrument_notes = []
-        max_end_time = 0
-
-        # Create notes for each instrument, starting each instrument at zero
-        for instrument_data in section_data:
-            instrument_category = instrument_data.get('instrument_category', '')
-            program = instrument_data.get('program', 0)
-            is_drum = instrument_data.get('is_drum', False)
-
-            if instrument_category in found_instruments:
-                found_instruments[instrument_category] = True
-                instrument = pretty_midi.Instrument(
-                    program=program,
-                    name=instrument_category,
-                    is_drum=is_drum
-                )
-
-                # Find the earliest start time for this instrument
-                instrument_start = float('inf')
-                for note_data in instrument_data.get('notes', []):
-                    note_start = float(note_data['start'])
-                    instrument_start = min(instrument_start, note_start)
-
-                # Create notes with timing relative to this instrument's start
-                for note_data in instrument_data.get('notes', []):
-                    note_start = float(note_data['start']) - instrument_start  # Shift to zero
-                    note_end = float(note_data['end']) - instrument_start     # Keep relative duration
-                    
-                    note = pretty_midi.Note(
-                        velocity=int(note_data['velocity']),
-                        pitch=int(note_data['pitch']),
-                        start=note_start,
-                        end=note_end
-                    )
-                    instrument.notes.append(note)
-                    max_end_time = max(max_end_time, note_end)
-
-                instrument_notes.append(instrument)
-
-        # Fill gaps for each instrument independently
-        for instrument in instrument_notes:
-            if instrument.notes:
-                current_end = max(note.end for note in instrument.notes)
-                pattern_start = 0  # Since we've already shifted to zero
-
-                while current_end < max_end_time:
-                    replicated_notes = []
-                    for note in instrument.notes:
-                        new_start = current_end + note.start  # Use zero-based timing
-                        new_end = new_start + (note.end - note.start)
-
-                        if new_start >= max_end_time:
-                            break
-                        if new_end > max_end_time:
-                            new_end = max_end_time
-
-                        replicated_notes.append(
-                            pretty_midi.Note(
-                                velocity=note.velocity,
-                                pitch=note.pitch,
-                                start=new_start,
-                                end=new_end
-                            )
-                        )
-
-                    instrument.notes.extend(replicated_notes)
-                    current_end = max(note.end for note in instrument.notes)
-
-        # Add instruments to MIDI
-        for instrument in instrument_notes:
-            print(f"Processing {instrument.name}")
-            pm.instruments.append(instrument)
-
-        # Check for missing instruments
-        missing = [inst for inst, found in found_instruments.items() if not found]
-        if missing:
-            print(f"Warning: Missing instruments in section: {', '.join(missing)}")
-
-        pm.write(filename)
-
-    def process_json_to_midi(self, json_data, output_dir):
-        """
-        Process population data and create MIDI files
-        """
-        os.makedirs(output_dir, exist_ok=True)
-        print("Starting MIDI processing...")
-        
-        # Debug print to understand data structure
-        print(f"First element type: {type(json_data[0]) if json_data else 'No data'}")
-        
-        for i, section in enumerate(json_data):
-            print(f"\nProcessing section {i+1}")
-            instruments = []
-            
-            # Handle single instrument dictionary
-            if isinstance(section, dict) and 'notes' in section:
-                instruments.append(section)
-            
-            # Handle list of instruments
-            elif isinstance(section, list):
-                # If it's already a flat list of instruments
-                if all(isinstance(item, dict) and 'notes' in item for item in section):
-                    instruments.extend(section)
-                # If it's a nested list
-                else:
-                    for group in section:
-                        if isinstance(group, dict) and 'notes' in group:
-                            instruments.append(group)
-                        elif isinstance(group, list):
-                            for item in group:
-                                if isinstance(item, dict) and 'notes' in item:
-                                    instruments.append(item)
-
-            if instruments:
-                print(f"Found {len(instruments)} instruments to process")
-                filename = os.path.join(output_dir, f"section_{i+1}.mid")
-                try:
-                    self.create_midi_from_section(instruments, filename)
-                    print(f"Successfully created: {filename}")
-                except Exception as e:
-                    print(f"Error creating MIDI file: {str(e)}")
-            else:
-                print(f"No valid instruments found in section {i+1}")
-
-    def call_post_process(self):
-        if not self.population or not isinstance(self.population, list):
-            print("No data in population or invalid structure.")
-            return
-
-        print("\n=== Population Structure Analysis ===")
-        print(f"Total population size: {len(self.population)}")
-        
-        # Analyze first individual in detail
-        if self.population:
-            first_individual = self.population[0]
-            print("\nFirst Individual Structure:")
-            print(f"Type: {type(first_individual)}")
-            print(f"Length: {len(first_individual)}")
-            print("\nDetailed content of first individual:")
-            print(json.dumps(first_individual, indent=2))
-
-        print("\n=== Processing for MIDI Generation ===")
-        json_data = self.population[:5]  # Limit to first 5 groups for processing
-        output_directory = "output"
-        
-        try:
-            self.process_json_to_midi(json_data, output_directory)
-            print(f"\nProcessing complete. Check {output_directory} directory")
-        except Exception as e:
-            print(f"Error during processing: {e}")
-            import traceback
-            traceback.print_exc()
-
     
     def convert_mid_to_mp3(folder_path="./output", output_folder="./output_mp3", sound_font_path=None):
         os.makedirs(output_folder, exist_ok=True)
@@ -574,3 +413,208 @@ class GeneticAlgorithm:
                     print(f"Converted {filename} to {mp3_filename}")
                 except Exception as e:
                     print(f"Error converting {filename}: {e}")
+    def create_midi_from_section(self, section_data, filename):
+        try:
+            pm = pretty_midi.PrettyMIDI()
+            
+            found_instruments = {
+                'Drum': False, 'Piano': False, 'Guitar': False, 
+                'Bass': False, 'Other': False
+            }
+
+            instrument_notes = []
+            max_end_time = 0
+
+            # Input validation
+            if not section_data or not isinstance(section_data, list):
+                raise ValueError(f"Invalid section data format: {type(section_data)}")
+
+            # Create notes for each instrument, starting each instrument at zero
+            for instrument_data in section_data:
+                if not isinstance(instrument_data, dict):
+                    print(f"Skipping invalid instrument data: {type(instrument_data)}")
+                    continue
+                    
+                instrument_category = instrument_data.get('instrument_category', '')
+                program = instrument_data.get('program', 0)
+                is_drum = instrument_data.get('is_drum', False)
+                notes = instrument_data.get('notes', [])
+                
+                if not notes or not isinstance(notes, list):
+                    print(f"Skipping instrument {instrument_category}: No valid notes found")
+                    continue
+
+                if instrument_category in found_instruments:
+                    found_instruments[instrument_category] = True
+                    instrument = pretty_midi.Instrument(
+                        program=program,
+                        name=instrument_category,
+                        is_drum=is_drum
+                    )
+
+                    try:
+                        # Find the earliest start time for this instrument
+                        instrument_start = min(
+                            float(note_data['start']) 
+                            for note_data in notes 
+                            if isinstance(note_data, dict) and 'start' in note_data
+                        )
+                        
+                        # Create notes with timing relative to this instrument's start
+                        for note_data in notes:
+                            if not isinstance(note_data, dict):
+                                continue
+                                
+                            try:
+                                note_start = float(note_data['start']) - instrument_start
+                                note_end = float(note_data['end']) - instrument_start
+                                velocity = int(note_data.get('velocity', 64))  # Default velocity if missing
+                                pitch = int(note_data.get('pitch', 60))  # Default pitch if missing
+                                
+                                if note_end <= note_start:
+                                    continue  # Skip invalid note timing
+                                    
+                                note = pretty_midi.Note(
+                                    velocity=max(0, min(127, velocity)),  # Clamp velocity
+                                    pitch=max(0, min(127, pitch)),  # Clamp pitch
+                                    start=max(0, note_start),  # Ensure non-negative
+                                    end=max(note_start + 0.1, note_end)  # Ensure minimum duration
+                                )
+                                instrument.notes.append(note)
+                                max_end_time = max(max_end_time, note_end)
+                                
+                            except (KeyError, ValueError) as e:
+                                print(f"Skipping invalid note in {instrument_category}: {e}")
+                                continue
+                                
+                        if instrument.notes:  # Only add instruments with valid notes
+                            instrument_notes.append(instrument)
+                            
+                    except (ValueError, TypeError) as e:
+                        print(f"Error processing instrument {instrument_category}: {e}")
+                        continue
+
+            # Fill gaps for each instrument independently
+            for instrument in instrument_notes:
+                if not instrument.notes:
+                    continue
+                    
+                try:
+                    current_end = max(note.end for note in instrument.notes)
+                    pattern_start = 0
+
+                    while current_end < max_end_time:
+                        replicated_notes = []
+                        for note in instrument.notes:
+                            new_start = current_end + note.start
+                            new_end = new_start + (note.end - note.start)
+
+                            if new_start >= max_end_time:
+                                break
+                            if new_end > max_end_time:
+                                new_end = max_end_time
+
+                            replicated_notes.append(
+                                pretty_midi.Note(
+                                    velocity=note.velocity,
+                                    pitch=note.pitch,
+                                    start=new_start,
+                                    end=new_end
+                                )
+                            )
+
+                        instrument.notes.extend(replicated_notes)
+                        if not replicated_notes:  # Break if no notes were added
+                            break
+                        current_end = max(note.end for note in instrument.notes)
+                        
+                except Exception as e:
+                    print(f"Error filling gaps for {instrument.name}: {e}")
+                    continue
+
+            # Add instruments to MIDI
+            for instrument in instrument_notes:
+                if instrument.notes:  # Only add instruments with notes
+                    pm.instruments.append(instrument)
+
+            # Validate final MIDI file
+            if not pm.instruments:
+                raise ValueError("No valid instruments to write")
+
+            pm.write(filename)
+            return True
+            
+        except Exception as e:
+            print(f"Error creating MIDI file {filename}: {e}")
+            return False
+
+    def process_json_to_midi(self, json_data, output_dir):
+        """
+        Process population data and create MIDI files with improved error handling
+        """
+        try:
+            os.makedirs(output_dir, exist_ok=True)
+            print("Starting MIDI processing...")
+            
+            if not json_data or not isinstance(json_data, list):
+                raise ValueError(f"Invalid input data format: {type(json_data)}")
+                
+            successful_files = 0
+            
+            for i, section in enumerate(json_data):
+                print(f"\nProcessing section {i+1}")
+                instruments = []
+                
+                try:
+                    # Handle single instrument dictionary
+                    if isinstance(section, dict) and 'notes' in section:
+                        instruments.append(section)
+                    
+                    # Handle list of instruments
+                    elif isinstance(section, list):
+                        # Flatten nested lists of instruments
+                        def flatten_instruments(item):
+                            if isinstance(item, dict) and 'notes' in item:
+                                return [item]
+                            elif isinstance(item, list):
+                                result = []
+                                for subitem in item:
+                                    result.extend(flatten_instruments(subitem))
+                                return result
+                            return []
+                        
+                        instruments.extend(flatten_instruments(section))
+                    
+                    if instruments:
+                        print(f"Found {len(instruments)} instruments to process")
+                        filename = os.path.join(output_dir, f"section_{self.file_counter}.mid")
+                        self.file_counter += 1
+                        if self.create_midi_from_section(instruments, filename):
+                            successful_files += 1
+                            print(f"Successfully created: {filename}")
+                    else:
+                        print(f"No valid instruments found in section {i+1}")
+                        
+                except Exception as e:
+                    print(f"Error processing section {i+1}: {e}")
+                    continue
+                    
+            print(f"\nProcessing complete. Successfully created {successful_files} of {len(json_data)} files.")
+            return successful_files > 0
+            
+        except Exception as e:
+            print(f"Fatal error during processing: {e}")
+            return False
+
+    def call_post_process(self):
+        if not self.population or not isinstance(self.population, list):
+            print("No data in population or invalid structure.")
+            return False
+
+        print("\n=== Population Structure Analysis ===")
+        print(f"Total population size: {len(self.population)}")
+        
+        json_data = [self.population[0]]  # Limit to first 5 groups
+        output_directory = "output"
+        
+        return self.process_json_to_midi(json_data, output_directory)
