@@ -1,0 +1,1 @@
+Please create a new branch for any feature you plan to add. When ready, submit a pull request to the main branch and ensure that your changes are thoroughly explained via comments in the pull request. For any questions or clarifications, feel free to reach out to me at vishwajeethogale307@gmail.com.
