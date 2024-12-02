@@ -2,14 +2,14 @@
 In this project, we reconstruct music from various components extracted from an input of MIDI files, using genetic algorithms to create better sounding samples.
 
 # Motivation
-As a group of engineers and musicians, we naturally wanted to explore the intersection of AI, mathematics, and music. Our goal is take existing songs and use genetic algorithms to manipulate and create new, euphonious songs from existing samples. 
+As a group of engineers and musicians, we naturally wanted to explore the intersection of AI, mathematics, and music. Our goal is to take existing songs and use genetic algorithms to generate new, euphonious songs from existing samples. 
 
 # Built With
 [![Python](https://www.python.org/community/logos/python-logo.png)](https://www.python.org/)
 
 [Node.js](https://nodejs.org/en)
 # Getting Started
-This project is built with a GUI to simplify user interactions. 
+This project includes a GUI to simplify user interactions. 
 
 1) To begin, ensure that Node.js, Python, and npm are installed on your local machine.
 
@@ -19,6 +19,8 @@ This project is built with a GUI to simplify user interactions.
 
 4) The GUI should launch in a localhost. On the main page of the GUI, there is an option to choose the MIDI files you are working with.
 
-5) After you have uploaded your files, you can increase the number of generations performed by the algorithm with the "Continue Recycling" button, and listen to the current output of the algorithm.
+5) After you have uploaded your files, you can start generating a new song using the "Recycle" button, which will perform 100 iterations of the genetic algorithm on random subsets of the midi dataset that you submitted in step 4.
+
+6) You can listen to the current song the algorithm has produced, or press the "Continue Recycling" button to process the song for 100 more generations.
 
 # Results
