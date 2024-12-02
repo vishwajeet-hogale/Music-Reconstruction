@@ -1,7 +1,7 @@
 # Music-Reconstruction With Genetic Algorithms
 In this project, we reconstruct music from various components extracted from an input of MIDI files, using genetic algorithms to create better sounding samples.
 
-Authors:[Justin Feldman](https://github.com/jfeldm02), Venkata Krishna Rayalu Garapati, [Vishwajeet Hogale](https://github.com/vishwajeet-hogale), Arzoo Jiwani, Annamayya Vennelakanti, [Jason Zou](https://github.com/zoujas)
+Authors:[Justin Feldman](https://github.com/jfeldm02), [Krishna Rayalu Garapati](https://github.com/VenkataKrishnaGarapati), [Vishwajeet Hogale](https://github.com/vishwajeet-hogale), [Arzoo Jiwani](https://github.com/ArzooMJ), [Annamayya Vennelakanti](https://github.com/Annamayya9), [Jason Zou](https://github.com/zoujas)
 
 # Motivation
 As a group of engineers and musicians, we naturally wanted to explore the intersection of AI, mathematics, and music. Our goal is to take existing songs and use genetic algorithms to generate new, euphonious songs from existing samples. 
