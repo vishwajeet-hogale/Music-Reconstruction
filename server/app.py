@@ -19,8 +19,11 @@ def home():
     return "Welcome to the Flask Backend!"
 @app.route('/run')
 def run():
-    main.main()
-    return jsonify({"message": "Files uploaded successfully"})
+    try:
+        main.main()
+        return jsonify({"message": "Files uploaded successfully","result":1})
+    except:
+        return jsonify({"result":0})
 @app.route("/upload", methods=["POST"])
 def upload_files():
     if "file_0" not in request.files:

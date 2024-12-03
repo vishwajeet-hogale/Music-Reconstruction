@@ -6,7 +6,8 @@ function App() {
   const [stage, setStage] = useState(0); // Tracks the current stage
   const [loading, setLoading] = useState(false); // Tracks if the loading screen is active
   const [uploadedFiles, setUploadedFiles] = useState([]); // Tracks uploaded MIDI files
-  const [songs, setSongs] = useState([]); // Tracks the list of song filenames
+  const [songs, setSongs] = useState([]);
+  const [genComplete, setGenComplete] = useState(-1); // Tracks the list of song filenames
 
   // Fetch the list of songs from the backend when the component mounts
   useEffect(() => {
@@ -29,19 +30,24 @@ function App() {
 
   // Handles the recycling process
   const handleRecycleClick = async () => {
+    if (genComplete === 1){
     setLoading(true); // Show the loading screen
-    
     setTimeout(() => {
       setLoading(false); // Hide the loading screen
       setStage((prevStage) => prevStage + 1); // Move to the next stage
-    }, 2000); // Simulate 5 seconds delay
+    }, 1000);
+   }
+   else{
+    alert("Genetic Algorithm still running!!!")
+   }
+    // Simulate 5 seconds delay
   };
 
   // Handles MIDI file uploads
   const handleFileUpload = async (event) => {
     const files = Array.from(event.target.files); // Convert FileList to an array
     const midiFiles = files.filter((file) => file.type === "audio/midi");
-
+    setGenComplete(0)
     if (midiFiles.length > 0) {
       setUploadedFiles(midiFiles);
       alert(
@@ -58,47 +64,42 @@ function App() {
 
       try {
         // Send the files to the backend using a POST request
-        const response = await fetch("http://127.0.0.1:5000/upload", {
+        const uploadResponse = await fetch("http://127.0.0.1:5000/upload", {
           method: "POST",
           body: formData,
         });
 
-        if (response.ok) {
-          const result = await response.json();
-          console.log("Files uploaded successfully:", result);
+        if (uploadResponse.ok) {
           alert("Files uploaded successfully!");
         } else {
-          console.error("Failed to upload files");
           alert("Failed to upload files. Please try again.");
         }
       } catch (error) {
-        console.error("Error during file upload:", error);
         alert("An error occurred while uploading files.");
+        console.error("Error during file upload:", error);
+      }
+
+      // Trigger the backend run operation
+      try {
+        const runResponse = await fetch("http://127.0.0.1:5000/run", {
+          method: "GET",
+        });
+
+        if (runResponse.ok) {
+          const result = await runResponse.json();
+          if (result["result"] === 1) {
+            setGenComplete(1); // Set generation complete
+          }
+        } else {
+          alert("Failed to process the files.");
+        }
+      } catch (error) {
+        alert("An error occurred while processing the files.");
+        console.error("Error during processing:", error);
       }
     } else {
       alert("Please upload valid MIDI files only!");
     }
-
-
-    try {
-        // Send the files to the backend using a POST request
-        const response = await fetch("http://127.0.0.1:5000/run", {
-          method: "GET"
-        });
-
-        // if (response.ok) {
-        //   const result = await response.json();
-        //   console.log("Generations successful:", result);
-        //   // alert("Generations successful!");
-        // } else {
-        //   console.error("Failed to upload files");
-        //   alert("Failed to upload files. Please try again.");
-        // }
-      } catch (error) {
-        console.error("Error during file upload:", error);
-        alert("An error occurred while uploading files.");
-      }
-
   };
 
   // Handles navigating back to the previous stage
@@ -140,10 +141,22 @@ function App() {
               </ul>
             </div>
           )}
-          <h1>Recycle Music</h1>
-          <button className="recycle-button" onClick={handleRecycleClick}>
-            ♻
-          </button>
+          {
+            // add loading animation here something that spins.
+            genComplete === 0 ? (
+            <>
+             <div className="spinner"></div>
+            </>
+            ) :
+          
+           (
+            <>
+              <h1>Recycle Music</h1>
+              <button className="recycle-button" onClick={handleRecycleClick}>
+                ♻ Recycle
+              </button>
+            </>
+          )}
         </>
       )}
 
@@ -176,7 +189,7 @@ function App() {
               </audio>
             </div>
             <button className="recycle-button" onClick={handleRecycleClick}>
-              Continue Recycling ♻
+              Next Stage ♻
             </button>
           </>
         )
