@@ -143,12 +143,12 @@ function App() {
           )}
           {
             // add loading animation here something that spins.
-            genComplete === 0 ? (
+            genComplete === 0  && (
             <>
              <div className="spinner"></div>
             </>
-            ) :
-          
+            ) }
+          { genComplete === 1 && genComplete !== -1 &&
            (
             <>
               <h1>Recycle Music</h1>
