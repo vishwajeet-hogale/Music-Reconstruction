@@ -194,19 +194,37 @@ class GeneticAlgorithm:
             # print(total_score)
             return total_score
     def score_tempo(self, individual):
-        gene=0
-        points=[]
+        points = []
         tempo_sum = 0
-        for i in range(0,5):
+
+        # Calculate the average tempo of the first 5 songs
+        for i in range(5):
             tempo_sum += individual[i].get('tempo', 100)
+        tempo_mean = tempo_sum / 5
 
-        tempo_mean = tempo_sum/5
-        gene=0
-        for j in range(0,5):
-            diff = abs(individual[j].get('tempo',100)-tempo_mean)
-            points.append(100-diff)
+        # Define the targets: half, same, and double the mean
+        lower_target = tempo_mean / 2  # Half of the mean
+        same_target = tempo_mean       # Same as the mean
+        upper_target = tempo_mean * 2  # Double the mean
 
-        return sum(points)/5
+        # Calculate points based on proximity to the targets
+        for j in range(5):
+            tempo = individual[j].get('tempo', 100)
+            # Determine the absolute difference to the nearest target
+            diff = min(
+                abs(tempo - lower_target),
+                abs(tempo - same_target),
+                abs(tempo - upper_target)
+            )
+            # Score is inversely proportional to the difference
+            points.append(max(0, 100 - diff))  # Ensure score is non-negative
+
+        # Normalize the total score to ensure max score for the parent is 100
+        total_score = sum(points)
+        normalized_score = (total_score / (5 * 100)) * 100  # Scale to 0-100
+
+        return normalized_score
+
     def score_time_signature(self, individual):
         time_signatures = [ind.get('time_signature') for ind in individual[:5]]
         counts=Counter(time_signatures) # count occurences of each time signature
