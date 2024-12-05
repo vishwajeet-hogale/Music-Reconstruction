@@ -21,7 +21,7 @@ def main():
         ga.fitness_population()
         if i % n == 0 :
             ga.call_post_process()
-    ga.convert_mid_to_mp3()
+    # ga.convert_mid_to_mp3()
 
 if __name__ == "__main__":
     main()
